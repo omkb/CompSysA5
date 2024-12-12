@@ -7,7 +7,9 @@
 struct Stat simulate(struct memory *mem, int start_addr, FILE *log_file, struct symbols *symbols)
 {
     struct Stat stats = {0};
-    int pc = start_addr, registers[32] = {0}, running = 1;
+    int pc = start_addr;
+    int registers[32] = {0};
+    int running = 1;
 
     while (running)
     {
@@ -32,8 +34,10 @@ struct Stat simulate(struct memory *mem, int start_addr, FILE *log_file, struct 
         int imm_j = ((int)instruction >> 31 << 20) | (instruction & 0xff000) |
                     ((instruction >> 9) & 0x800) | ((instruction >> 20) & 0x7fe);
 
-        int rs1_val = registers[rs1], rs2_val = registers[rs2];
-        int reg_write = 0, reg_write_value = 0;
+        int rs1_val = registers[rs1];
+        int rs2_val = registers[rs2];
+        int reg_write = 0;
+        int reg_write_value = 0;
 
         switch (opcode)
         {
