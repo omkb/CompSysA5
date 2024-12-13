@@ -2,6 +2,8 @@
 #include <stdio.h>
 
 void disassemble(uint32_t addr, uint32_t instruction, char* result, size_t buf_size, struct symbols* symbols) {
+    (void)addr;
+    (void)symbols;
     unsigned int opcode = instruction & 0x7f;
     unsigned int rd = (instruction >> 7) & 0x1f;
     unsigned int funct3 = (instruction >> 12) & 0x7;

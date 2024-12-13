@@ -21,7 +21,7 @@ struct Stat simulate(struct memory *mem, int start_addr, FILE *log_file, struct 
         disassemble(pc, instruction, disassembled, sizeof(disassembled), symbols);
 
         if (log_file)
-            fprintf(log_file, "%6d     %05x : %08x  %-20s", stats.insns, pc, instruction, disassembled);
+            fprintf(log_file, "%6ld     %05x : %08x  %-20s", stats.insns, pc, instruction, disassembled);
 
         unsigned int opcode = instruction & 0x7f;
         unsigned int rd = (instruction >> 7) & 0x1f;
@@ -31,7 +31,7 @@ struct Stat simulate(struct memory *mem, int start_addr, FILE *log_file, struct 
         unsigned int funct7 = (instruction >> 25) & 0x7f;
 
         int imm_i = ((int)instruction) >> 20;
-        int imm_s = (((int)instruction) >> 20) & ~0x1f | ((instruction >> 7) & 0x1f);
+        int imm_s = (((int)instruction) >> 20 & ~0x1f) | ((instruction >> 7) & 0x1f);
         int imm_b = ((int)instruction >> 31 << 12) | ((instruction >> 7) & 0x1e) |
                     ((instruction >> 20) & 0x7e0) | ((instruction << 4) & 0x800);
         int imm_u = instruction & 0xfffff000;
@@ -61,13 +61,13 @@ struct Stat simulate(struct memory *mem, int start_addr, FILE *log_file, struct 
                         reg_write_value = rs2_val ? (int)rs1_val / (int)rs2_val : -1;
                         break; // DIV
                     case 0x5:
-                        reg_write_value = rs2_val ? (unsigned)rs1_val / (unsigned)rs2_val : -1;
+                        reg_write_value = rs2_val ? (unsigned)rs1_val / (unsigned)rs2_val : (unsigned)-1;
                         break; // DIVU
                     case 0x6:
                         reg_write_value = rs2_val ? (int)rs1_val % (int)rs2_val : rs1_val;
                         break; // REM
                     case 0x7:
-                        reg_write_value = rs2_val ? (unsigned)rs1_val % (unsigned)rs2_val : rs1_val;
+                        reg_write_value = rs2_val ? (unsigned)rs1_val % (unsigned)rs2_val : (unsigned) rs1_val;
                         break; // REMU
                     }
                 }
@@ -91,7 +91,7 @@ struct Stat simulate(struct memory *mem, int start_addr, FILE *log_file, struct 
                         reg_write_value = rs1_val ^ rs2_val;
                         break; // XOR
                     case 0x5:
-                        reg_write_value = (funct7 == 0x20) ? (int)rs1_val >> (rs2_val & 0x1f) : (unsigned)rs1_val >> (rs2_val & 0x1f);
+                        reg_write_value = (funct7 == 0x20) ? (int)rs1_val >> (rs2_val & 0x1f) : (int)(unsigned)rs1_val >> (rs2_val & 0x1f);
                         break; // SRL/SRA
                     case 0x6:
                         reg_write_value = rs1_val | rs2_val;
@@ -126,7 +126,7 @@ struct Stat simulate(struct memory *mem, int start_addr, FILE *log_file, struct 
                     reg_write_value = rs1_val ^ imm_i;
                     break; // XORI
                 case 0x5:
-                    reg_write_value = (imm_i & 0x400) ? (int)rs1_val >> (imm_i & 0x1f) : (unsigned)rs1_val >> (imm_i & 0x1f);
+                    reg_write_value = (imm_i & 0x400) ? (int)rs1_val >> (imm_i & 0x1f) : (int)(unsigned)rs1_val >> (imm_i & 0x1f);
                     break; // SRLI/SRAI
                 case 0x6:
                     reg_write_value = rs1_val | imm_i;
